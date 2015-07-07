@@ -1,12 +1,31 @@
-angular.module('myProject.services')
+angular.module('brandscopicApp.services')
     .service('locationService', function() {
         this.updatedAt = null;
+        this.updateInterval = 1 * 60 * 1000;
         this.locationAccessDeined = null;
 
+        // set to true to show debugging info
+        DEBUG = true;
+
+        var debug = {
+            log: function() {
+                DEBUG&&console.log(arguments[0], arguments[1] || '');
+            },
+            info: function() {
+                DEBUG&&console.info(arguments[0], arguments[1] || '');
+            },
+            warn: function() {
+                DEBUG&&console.warn(arguments[0], arguments[1] || '');
+            },
+            error: function() {
+                DEBUG&&console.error(arguments[0], arguments[1] || '');
+            }
+        }
+
         this.getLocation = function(success_callback, error_callback) {
-            console.info("getting location...");
+            debug.info("getting location...");
             if (localStorage.getItem('lastLocation') && !_needsUpdate()) {
-                console.info("got cached location", JSON.parse(localStorage.getItem('lastLocation')));
+                debug.info("got cached location", JSON.parse(localStorage.getItem('lastLocation')));
                 success_callback && success_callback(JSON.parse(localStorage.getItem('lastLocation')));
             } else {
                 _getCurrentLocation(function(position) {
@@ -38,25 +57,25 @@ angular.module('myProject.services')
             }
 
             function handleNoGeolocation(errorFlag) {
-                this.locationAccessDeined = true;
                 error_callback && error_callback();
-                console.warn('Access to location has been denied!');
+                debug.warn('Access to location has been denied!');
                 if (errorFlag) {
-                    console.error('The Geolocation service failed.');
+                    return 'The Geolocation service failed.';
                 } else {
-                    console.error('Your browser doesn\'t support geolocation.');
+                    this.locationAccessDeined = true;
+                    return 'Your browser doesn\'t support geolocation.';
                 }
             }
         };
 
         var _updateLastLocation = function(currentLocation) {
-            console.info("updating cached location...");
+            debug.info("updating cached location...", currentLocation);
             localStorage.setItem('lastLocation', JSON.stringify(currentLocation));
             localStorage.setItem('updatedAt', new Date().getTime());
         };
 
         var _needsUpdate = function() {
-            console.info("checking if location needs update...");
-            return new Date().getTime() - new Date(localStorage.getItem('updatedAt')).getTime() > 1 * 60 * 1000;
+            debug.info("checking if location needs update...");
+            return new Date().getTime() - new Date(Number(localStorage.getItem('updatedAt'))).getTime() > this.updateInterval;
         };
     });

@@ -1,4 +1,4 @@
-angular.module('brandscopicApp.services')
+angular.module('myProject.services')
     .service('locationService', function() {
         this.updatedAt = null;
         this.updateInterval = 1 * 60 * 1000;
